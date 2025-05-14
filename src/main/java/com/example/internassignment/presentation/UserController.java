@@ -22,6 +22,12 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(CreateUserResponseDto.from(createUserInfo));
     }
 
+    @PostMapping("/admin/signup")
+    public ResponseEntity<CreateAdminResponseDto> adminSignUp(@Valid @RequestBody CreateAdminRequestDto request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(CreateAdminResponseDto
+                .from(userService.createAdmin(request.toCommand())));
+    }
+
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponseDto> login(@Valid @RequestBody UserLoginRequestDto request){
         HttpHeaders headers = new HttpHeaders();
