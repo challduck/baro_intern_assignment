@@ -2,6 +2,7 @@ package com.example.internassignment.presentation;
 
 import com.example.internassignment.application.UserService;
 import com.example.internassignment.application.dto.CreateUserInfo;
+import com.example.internassignment.application.dto.ProcessUpdateUserRoleResult;
 import com.example.internassignment.presentation.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,5 +30,13 @@ public class UserController {
                 .build();
         headers.set("Authorization", "Bearer " + response.getToken());
         return ResponseEntity.status(HttpStatus.OK).headers(headers).body(response);
+    }
+
+    @PatchMapping("/admin/users/{userId}/roles")
+    public ResponseEntity<UserRoleUpdateResponseDto> roleUpdateAdmin(
+            @PathVariable(name = "userId") Long userId
+    ){
+        ProcessUpdateUserRoleResult result = userService.updateUserRole(userId);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(UserRoleUpdateResponseDto.from(result));
     }
 }
