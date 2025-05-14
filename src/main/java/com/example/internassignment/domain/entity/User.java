@@ -32,4 +32,8 @@ public class User {
         this.nickname = nickname;
         this.role = Role.USER;
     }
+
+    public void updateRole(){
+        this.role = Role.ADMIN;
+    }
 }
