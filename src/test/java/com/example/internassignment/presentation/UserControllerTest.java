@@ -1,15 +1,13 @@
 package com.example.internassignment.presentation;
 
 import com.example.internassignment.application.UserService;
-import com.example.internassignment.application.dto.CreateUserCommand;
-import com.example.internassignment.application.dto.CreateUserInfo;
-import com.example.internassignment.application.dto.ProcessUpdateUserRoleResult;
-import com.example.internassignment.application.dto.ProcessUserResult;
+import com.example.internassignment.application.dto.*;
 import com.example.internassignment.common.exception.InvalidCredentialsException;
 import com.example.internassignment.domain.entity.Role;
 import com.example.internassignment.infrastructure.config.SecurityConfig;
 import com.example.internassignment.infrastructure.jwt.JwtTokenProvider;
 import com.example.internassignment.infrastructure.security.UserDetailsServiceImpl;
+import com.example.internassignment.presentation.dto.CreateAdminRequestDto;
 import com.example.internassignment.presentation.dto.CreateUserRequestDto;
 import com.example.internassignment.presentation.dto.UserLoginRequestDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -245,5 +243,39 @@ class UserControllerTest {
         // when & then
         mockMvc.perform(patch("/admin/users/{userId}/roles", userId).with(csrf()))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("관리자 회원가입 API 성공시 201과 함께 관리자정보 응답에 성공한다.")
+    void test9 () throws Exception {
+        // given
+        String username = "testAdminName";
+        String password = "testPassword1234!";
+        String nickname = "testNickname";
+        Role role = Role.ADMIN;
+
+        CreateAdminRequestDto request = CreateAdminRequestDto.builder()
+                .username(username)
+                .password(password)
+                .nickname(nickname)
+                .build();
+
+        CreateAdminInfo createAdminInfo = CreateAdminInfo.builder()
+                .username(username)
+                .nickname(nickname)
+                .roles(List.of(role))
+                .build();
+
+        given(userService.createAdmin(any(CreateAdminCommand.class))).willReturn(createAdminInfo);
+
+        // when & then
+        mockMvc.perform(post("/admin/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(csrf()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.username").value(username))
+                .andExpect(jsonPath("$.nickname").value(nickname))
+                .andExpect(jsonPath("$.roles[0]").value(role.name()));
     }
 }

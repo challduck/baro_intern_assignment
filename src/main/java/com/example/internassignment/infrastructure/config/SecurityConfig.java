@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .headers((headersConfigurer)->headersConfigurer.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 
         http.authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login","/signup").permitAll()
+                        .requestMatchers("/login","/signup", "/admin/signup").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().permitAll()
         );
