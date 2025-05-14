@@ -3,9 +3,12 @@ package com.example.internassignment.presentation;
 import com.example.internassignment.application.UserService;
 import com.example.internassignment.application.dto.CreateUserCommand;
 import com.example.internassignment.application.dto.CreateUserInfo;
+import com.example.internassignment.application.dto.ProcessUserResult;
+import com.example.internassignment.common.exception.InvalidCredentialsException;
 import com.example.internassignment.domain.entity.Role;
 import com.example.internassignment.infrastructure.config.SecurityConfig;
 import com.example.internassignment.presentation.dto.CreateUserRequest;
+import com.example.internassignment.presentation.dto.UserLoginRequestDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,10 +23,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class})
 @WebMvcTest(UserController.class)
 class UserControllerTest {
     @Autowired
@@ -89,5 +91,73 @@ class UserControllerTest {
                 .content(objectMapper.writeValueAsString(request))
                         .with(csrf()))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("로그인: 필드 누락 등 유효성 실패 시 400 Bad Request를 응답한다.")
+    void test3 () throws Exception {
+        // given
+        String username = "testUsername";
+
+        UserLoginRequestDto dto = UserLoginRequestDto.builder()
+                .username(username)
+                .build();
+
+        // when & then
+        mockMvc.perform(post("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto))
+                .with(csrf()))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("로그인: 로그인 요청시 정보가 올바르지 않으면 401 Unauthorized를 응답한다.")
+    void test4 () throws Exception {
+        // given
+        String username = "testUsername";
+        String password = "testPassword1234!";
+
+        UserLoginRequestDto dto = UserLoginRequestDto.builder()
+                .username(username)
+                .password(password)
+                .build();
+
+        given(userService.signin(any())).willThrow(new InvalidCredentialsException("아이디 혹은 비밀번호가 올바르지 않습니다."));
+
+        // when & then
+        mockMvc.perform(post("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto))
+                .with(csrf()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("로그인: 로그인 요청시 올바른 요청이라면 200과 함께 token을 return 한다.")
+    void test5 () throws Exception {
+        // given
+        String username = "testUsername";
+        String password = "testPassword1234!";
+        String token = "jwt.token.value";
+
+        UserLoginRequestDto dto = UserLoginRequestDto.builder()
+                .username(username)
+                .password(password)
+                .build();
+
+        ProcessUserResult result = ProcessUserResult.builder()
+                .token(token)
+                .build();
+
+        given(userService.signin(any())).willReturn(result);
+
+        mockMvc.perform(post("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto))
+                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value(token))
+                .andExpect(header().string("Authorization", "Bearer " + token));
     }
 }

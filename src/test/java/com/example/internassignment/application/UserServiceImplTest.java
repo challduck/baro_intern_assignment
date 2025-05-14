@@ -3,6 +3,9 @@ package com.example.internassignment.application;
 import com.example.internassignment.application.dto.CreateUserCommand;
 import com.example.internassignment.application.dto.CreateUserInfo;
 import com.example.internassignment.application.dto.ProcessUserCommand;
+import com.example.internassignment.application.dto.ProcessUserResult;
+import com.example.internassignment.common.exception.InvalidCredentialsException;
+import com.example.internassignment.common.exception.UsernameAlreadyException;
 import com.example.internassignment.domain.UserRepository;
 import com.example.internassignment.domain.entity.Role;
 import com.example.internassignment.domain.entity.User;
@@ -62,7 +65,7 @@ class UserServiceImplTest {
 
         // when & then
         assertThatThrownBy(()-> userServiceImpl.createUser(createUserCommand))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(UsernameAlreadyException.class)
                 .hasMessage("이미 존재하는 아이디입니다.");
 
         // verify
@@ -120,10 +123,10 @@ class UserServiceImplTest {
         given(tokenProvider.generateToken(eq(user), any(Duration.class))).willReturn(token);
 
         // when
-        String result = userServiceImpl.signin(command);
+        ProcessUserResult result = userServiceImpl.signin(command);
 
         // then
-        assertThat(result).isEqualTo(token);
+        assertThat(result.getToken()).isEqualTo(token);
     }
 
     @Test
@@ -146,7 +149,7 @@ class UserServiceImplTest {
 
         // when & then
         assertThatThrownBy(()-> userServiceImpl.signin(command))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidCredentialsException.class)
                 .hasMessage("아이디 혹은 비밀번호가 올바르지 않습니다.");
     }
 }

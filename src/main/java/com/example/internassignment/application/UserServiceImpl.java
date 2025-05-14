@@ -3,6 +3,9 @@ package com.example.internassignment.application;
 import com.example.internassignment.application.dto.CreateUserCommand;
 import com.example.internassignment.application.dto.CreateUserInfo;
 import com.example.internassignment.application.dto.ProcessUserCommand;
+import com.example.internassignment.application.dto.ProcessUserResult;
+import com.example.internassignment.common.exception.InvalidCredentialsException;
+import com.example.internassignment.common.exception.UsernameAlreadyException;
 import com.example.internassignment.domain.UserRepository;
 import com.example.internassignment.domain.entity.User;
 import com.example.internassignment.infrastructure.jwt.JwtTokenProvider;
@@ -25,7 +28,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public CreateUserInfo createUser(CreateUserCommand createUserCommand) {
         if (userRepository.isExistUsername(createUserCommand.getUsername())) {
-            throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
+            throw new UsernameAlreadyException("이미 존재하는 아이디입니다.");
         }
         User user = User.builder()
                 .username(createUserCommand.getUsername())
@@ -43,14 +46,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String signin(ProcessUserCommand command) {
+    public ProcessUserResult signin(ProcessUserCommand command) {
         User user = userRepository.findByUsername(command.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("아이디 혹은 비밀번호가 올바르지 않습니다."));
+                .orElseThrow(() -> new InvalidCredentialsException("아이디 혹은 비밀번호가 올바르지 않습니다."));
 
         if (!passwordEncoder.matches(command.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("아이디 혹은 비밀번호가 올바르지 않습니다.");
+            throw new InvalidCredentialsException("아이디 혹은 비밀번호가 올바르지 않습니다.");
         }
 
-        return jwtTokenProvider.generateToken(user, expiredAt);
+        return ProcessUserResult.builder()
+                .token(jwtTokenProvider.generateToken(user, expiredAt))
+                .build();
     }
 }
