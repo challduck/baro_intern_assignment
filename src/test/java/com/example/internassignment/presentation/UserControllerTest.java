@@ -7,7 +7,7 @@ import com.example.internassignment.application.dto.ProcessUserResult;
 import com.example.internassignment.common.exception.InvalidCredentialsException;
 import com.example.internassignment.domain.entity.Role;
 import com.example.internassignment.infrastructure.config.SecurityConfig;
-import com.example.internassignment.presentation.dto.CreateUserRequest;
+import com.example.internassignment.presentation.dto.CreateUserRequestDto;
 import com.example.internassignment.presentation.dto.UserLoginRequestDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -46,7 +46,7 @@ class UserControllerTest {
         String nickname = "testNickname";
         Role role = Role.USER;
 
-        CreateUserRequest request = CreateUserRequest.builder()
+        CreateUserRequestDto request = CreateUserRequestDto.builder()
                 .username(username)
                 .password(password)
                 .nickname(nickname)
@@ -79,7 +79,7 @@ class UserControllerTest {
         String password = "testPassword1234!";
         String nickname = "testNickname";
 
-        CreateUserRequest request = CreateUserRequest.builder()
+        CreateUserRequestDto request = CreateUserRequestDto.builder()
                 .username(username)
                 .password(password)
                 .nickname(nickname)

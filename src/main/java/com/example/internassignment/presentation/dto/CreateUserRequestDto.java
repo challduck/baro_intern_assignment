@@ -10,7 +10,7 @@ import org.hibernate.validator.constraints.Length;
 @Getter
 @Builder
 @AllArgsConstructor
-public class CreateUserRequest {
+public class CreateUserRequestDto {
     @NotNull
     @Length(min = 6, max = 255)
     private String username;
