@@ -11,7 +11,7 @@ spring:
       path: /h2-console
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:testjwtsecret1234567891234567891}
 
 server:
   port: 8080
