@@ -1,0 +1,33 @@
+@host = localhost:8080
+@nickname = testNickname
+@password = testPassword1234!
+@username = testUsername
+@jwt = jwt
+@userId = 1
+
+### 사용자 회원가입 API
+POST {{host}}/signup
+Content-Type: Application/json
+
+{
+  "nickname": "{{nickname}}",
+  "password": "{{password}}",
+  "username": "{{username}}"
+}
+
+### 사용자 로그인 API
+POST {{host}}/login
+Content-Type: Application/json
+
+{
+  "nickname": "{{nickname}}",
+  "password": "{{password}}",
+  "username": "{{username}}"
+}
+
+
+### 권한 변경 API는 ADMIN 회원 가입 이후 사용할 예정입니다.
+### 사용자 권한 변경 API
+PATCH {{host}}/admin/users/{{userId}}/roles
+Content-Type: Application/json
+Authorization:
