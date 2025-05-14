@@ -1,10 +1,8 @@
 package com.example.internassignment.application;
 
-import com.example.internassignment.application.dto.CreateUserCommand;
-import com.example.internassignment.application.dto.CreateUserInfo;
-import com.example.internassignment.application.dto.ProcessUserCommand;
-import com.example.internassignment.application.dto.ProcessUserResult;
+import com.example.internassignment.application.dto.*;
 import com.example.internassignment.common.exception.InvalidCredentialsException;
+import com.example.internassignment.common.exception.UserNotFoundException;
 import com.example.internassignment.common.exception.UsernameAlreadyException;
 import com.example.internassignment.domain.UserRepository;
 import com.example.internassignment.domain.entity.User;
@@ -15,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +55,21 @@ public class UserServiceImpl implements UserService {
 
         return ProcessUserResult.builder()
                 .token(jwtTokenProvider.generateToken(user, expiredAt))
+                .build();
+    }
+
+    @Transactional
+    @Override
+    public ProcessUpdateUserRoleResult updateUserRole(Long userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(()-> new UserNotFoundException("사용자를 찾을 수 없습니다."));
+
+        user.updateRole();
+
+        return ProcessUpdateUserRoleResult.builder()
+                .username(user.getUsername())
+                .nickname(user.getNickname())
+                .roles(List.of(user.getRole()))
                 .build();
     }
 }

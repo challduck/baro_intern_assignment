@@ -1,9 +1,6 @@
 package com.example.internassignment.application;
 
-import com.example.internassignment.application.dto.CreateUserCommand;
-import com.example.internassignment.application.dto.CreateUserInfo;
-import com.example.internassignment.application.dto.ProcessUserCommand;
-import com.example.internassignment.application.dto.ProcessUserResult;
+import com.example.internassignment.application.dto.*;
 
 public interface UserService {
 
@@ -11,4 +8,5 @@ public interface UserService {
 
     ProcessUserResult signin(ProcessUserCommand command);
 
+    ProcessUpdateUserRoleResult updateUserRole(Long userId);
 }
