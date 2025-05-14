@@ -3,8 +3,8 @@ package com.example.internassignment.presentation;
 import com.example.internassignment.application.UserService;
 import com.example.internassignment.application.dto.CreateUserCommand;
 import com.example.internassignment.application.dto.CreateUserInfo;
-import com.example.internassignment.config.TestSecurityConfig;
 import com.example.internassignment.domain.entity.Role;
+import com.example.internassignment.infrastructure.config.SecurityConfig;
 import com.example.internassignment.presentation.dto.CreateUserRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Import(TestSecurityConfig.class)
+@Import(SecurityConfig.class)
 @WebMvcTest(UserController.class)
 class UserControllerTest {
     @Autowired
