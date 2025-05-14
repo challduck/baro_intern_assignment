@@ -1,10 +1,8 @@
 package com.example.internassignment.application;
 
-import com.example.internassignment.application.dto.CreateUserCommand;
-import com.example.internassignment.application.dto.CreateUserInfo;
-import com.example.internassignment.application.dto.ProcessUserCommand;
-import com.example.internassignment.application.dto.ProcessUserResult;
+import com.example.internassignment.application.dto.*;
 import com.example.internassignment.common.exception.InvalidCredentialsException;
+import com.example.internassignment.common.exception.UserNotFoundException;
 import com.example.internassignment.common.exception.UsernameAlreadyException;
 import com.example.internassignment.domain.UserRepository;
 import com.example.internassignment.domain.entity.Role;
@@ -17,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -151,5 +150,44 @@ class UserServiceImplTest {
         assertThatThrownBy(()-> userServiceImpl.signin(command))
                 .isInstanceOf(InvalidCredentialsException.class)
                 .hasMessage("아이디 혹은 비밀번호가 올바르지 않습니다.");
+    }
+
+    @Test
+    @DisplayName("권한 변경: 권한 변경 사용자를 찾을 수 없으면 실패한다.")
+    void test5 (){
+        // given
+        Long userId = 1L;
+        given(userRepository.findByUserId(userId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(()-> userServiceImpl.updateUserRole(userId))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("사용자를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("권한 변경: 권한 변경에 성공한다.")
+    void test6 (){
+        // given
+        Long userId = 1L;
+        User user = User.builder()
+                        .username(username)
+                        .password(encodedPassword)
+                        .nickname(nickname)
+                        .build();
+
+        ReflectionTestUtils.setField(user, "role", Role.USER);
+
+        given(userRepository.findByUserId(userId)).willReturn(Optional.of(user));
+
+        // when
+        ProcessUpdateUserRoleResult result = userServiceImpl.updateUserRole(userId);
+
+        // then
+        then(userRepository).should(times(1)).findByUserId(userId);
+
+        assertThat(result.getUsername()).isEqualTo(username);
+        assertThat(result.getNickname()).isEqualTo(nickname);
+        assertThat(result.getRoles()).containsExactly(Role.ADMIN);
     }
 }
