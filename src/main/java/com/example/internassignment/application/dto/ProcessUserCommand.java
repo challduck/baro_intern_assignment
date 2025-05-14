@@ -5,8 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class CreateUserCommand {
+public class ProcessUserCommand {
     private String username;
     private String password;
-    private String nickname;
 }
