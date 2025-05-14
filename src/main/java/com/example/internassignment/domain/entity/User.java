@@ -33,6 +33,19 @@ public class User {
         this.role = Role.USER;
     }
 
+    public static User createAdmin (String username, String password, String nickname) {
+
+        User user = User.builder()
+                .username(username)
+                .password(password)
+                .nickname(nickname)
+                .build();
+
+        user.role = Role.ADMIN;
+
+        return user;
+    }
+
     public void updateRole(){
         this.role = Role.ADMIN;
     }
