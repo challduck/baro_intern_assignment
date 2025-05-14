@@ -9,4 +9,6 @@ public interface UserService {
     ProcessUserResult signin(ProcessUserCommand command);
 
     ProcessUpdateUserRoleResult updateUserRole(Long userId);
+
+    CreateAdminInfo createAdmin(CreateAdminCommand command);
 }

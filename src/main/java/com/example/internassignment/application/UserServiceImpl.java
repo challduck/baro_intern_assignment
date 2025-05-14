@@ -72,4 +72,25 @@ public class UserServiceImpl implements UserService {
                 .roles(List.of(user.getRole()))
                 .build();
     }
+
+    @Transactional
+    @Override
+    public CreateAdminInfo createAdmin(CreateAdminCommand command) {
+        if (userRepository.isExistUsername(command.getUsername())) {
+            throw new UsernameAlreadyException("이미 존재하는 아이디입니다.");
+        }
+        User user = User.createAdmin(
+                    command.getUsername(),
+                    passwordEncoder.encode(command.getPassword()),
+                    command.getNickname()
+                );
+
+        User save = userRepository.save(user);
+
+        return CreateAdminInfo.builder()
+                .username(save.getUsername())
+                .nickname(save.getNickname())
+                .roles(List.of(save.getRole()))
+                .build();
+    }
 }

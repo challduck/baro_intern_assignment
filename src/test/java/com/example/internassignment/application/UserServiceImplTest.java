@@ -85,9 +85,7 @@ class UserServiceImplTest {
 
         given(userRepository.isExistUsername(username)).willReturn(false);
         given(passwordEncoder.encode(encodedPassword)).willReturn(encodedPassword);
-        given(userRepository.save(any(User.class))).willAnswer(invocation -> {
-            return invocation.<User>getArgument(0);
-        });
+        given(userRepository.save(any(User.class))).willAnswer(invocation -> invocation.<User>getArgument(0));
 
         // when
         CreateUserInfo createUserInfo = userServiceImpl.createUser(createUserCommand);
@@ -189,5 +187,34 @@ class UserServiceImplTest {
         assertThat(result.getUsername()).isEqualTo(username);
         assertThat(result.getNickname()).isEqualTo(nickname);
         assertThat(result.getRoles()).containsExactly(Role.ADMIN);
+    }
+
+    @Test
+    @DisplayName("관리자 회원가입: 관리자 회원가입에 성공한다.")
+    void test7() {
+        // given
+        Role role = Role.ADMIN;
+
+        CreateAdminCommand createAdminCommand = CreateAdminCommand.builder()
+                .username(username)
+                .password(encodedPassword)
+                .nickname(nickname)
+                .build();
+
+        given(userRepository.isExistUsername(username)).willReturn(false);
+        given(passwordEncoder.encode(encodedPassword)).willReturn(encodedPassword);
+        given(userRepository.save(any(User.class))).willAnswer(invocation -> invocation.<User>getArgument(0));
+
+        // when
+        CreateAdminInfo createAdminInfo = userServiceImpl.createAdmin(createAdminCommand);
+
+        // then
+        assertThat(createAdminInfo.getUsername()).isEqualTo(username);
+        assertThat(createAdminInfo.getNickname()).isEqualTo(nickname);
+        assertThat(createAdminInfo.getRoles()).contains(role);
+
+        // verify
+        then(userRepository).should(times(1)).save(any(User.class));
+        then(passwordEncoder).should(times(1)).encode(encodedPassword);
     }
 }
