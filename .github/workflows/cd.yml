@@ -35,7 +35,7 @@ jobs:
           source: build/libs/*.jar
           target: /home/${{ secrets.EC2_USER }}/app
 
-      - name: Run app on EC2
+      - name: Remote SSH - Run App on EC2
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -43,12 +43,18 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script_stop: false
           script: |
+            echo "[STEP] 종료 중인 애플리케이션 확인 및 종료"
             PID=$(pgrep -f 'java -jar')
             if [ -n "$PID" ]; then
+              echo "기존 프로세스 종료: $PID"
               kill -15 $PID
               sleep 3
             fi
+            
+            nohup java -jar /home/${{ secrets.EC2_USER }}/app/*.jar --server.port=8081 \
+              > /home/${{ secrets.EC2_USER }}/app/app.log 2>&1 < /dev/null &
+            
+            disown
+            
+            echo "[완료] 배포 시각: $(date)"
 
-            nohup java -jar /home/${{ secrets.EC2_USER }}/app/*.jar --server.port=8081 > /home/${{ secrets.EC2_USER }}/app/app.log 2>&1 &
-
-            echo "Deployed at $(date)"
