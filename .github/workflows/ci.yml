@@ -1,14 +1,22 @@
-name: SpringBoot Project CI + Coverage Upload
+name: CI + JaCoCo Coverage + GitHub Pages Deploy (dev only)
 
 on:
+  push:
+    branches:
+      - dev
   pull_request:
     branches:
       - dev
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
-  test-and-upload:
+  test-and-deploy:
     runs-on: ubuntu-latest
-    name: Run Tests & Upload Coverage Report
+    name: Run Tests → Generate Coverage → Deploy
 
     steps:
       - name: Checkout Source Code
@@ -23,11 +31,21 @@ jobs:
       - name: Grant Permission to Gradlew
         run: chmod +x ./gradlew
 
-      - name: Run Tests & Generate JaCoCo Coverage
+      - name: Run Tests & Generate JaCoCo Report
         run: ./gradlew clean test jacocoTestReport
 
-      - name: Upload Coverage Artifact
+      - name: Upload JaCoCo Report as Artifact (for PRs)
+        if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-report
           path: build/jacocoHtml
+
+      - name: Deploy to GitHub Pages (on dev branch)
+        if: github.ref == 'refs/heads/dev'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: build/jacocoHtml
+          publish_branch: gh-pages
+          force_orphan: true
