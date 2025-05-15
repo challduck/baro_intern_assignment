@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtTokenProvider.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">intern-assignment</a> &gt; <a href="index.source.html" class="el_package">com.example.internassignment.infrastructure.jwt</a> &gt; <span class="el_source">JwtTokenProvider.java</span></div><h1>JwtTokenProvider.java</h1><pre class="source lang-java linenums">package com.example.internassignment.infrastructure.jwt;
+
+import com.example.internassignment.domain.entity.User;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Header;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+@Component
+@RequiredArgsConstructor
+public class JwtTokenProvider {
+
+    @Value(&quot;${jwt.secret}&quot;)
+    private String jwtSecret;
+
+    public String generateToken(User user, Duration expiredAt) {
+<span class="fc" id="L28">        Date now = new Date();</span>
+<span class="fc" id="L29">        return makeToken(new Date(now.getTime() + expiredAt.toMillis()), user);</span>
+    }
+
+    public String makeToken(Date expiry, User user) {
+<span class="fc" id="L33">        Date now = new Date();</span>
+<span class="fc" id="L34">        SecretKey key = getSecretKey();</span>
+<span class="fc" id="L35">        List&lt;String&gt; authorities = Collections.singletonList(user.getRole().name());</span>
+
+<span class="fc" id="L37">        return Jwts.builder()</span>
+<span class="fc" id="L38">                .setHeaderParam(Header.TYPE, Header.JWT_TYPE)</span>
+<span class="fc" id="L39">                .setHeader(Map.of(&quot;alg&quot;, &quot;HS256&quot;))</span>
+<span class="fc" id="L40">                .setIssuer(&quot;intern-assignment&quot;)</span>
+<span class="fc" id="L41">                .setSubject(user.getUsername())</span>
+<span class="fc" id="L42">                .claim(&quot;id&quot;, user.getUserId())</span>
+<span class="fc" id="L43">                .claim(&quot;auth&quot;, authorities)</span>
+<span class="fc" id="L44">                .setIssuedAt(now)</span>
+<span class="fc" id="L45">                .setExpiration(expiry)</span>
+<span class="fc" id="L46">                .signWith(key)</span>
+<span class="fc" id="L47">                .compact();</span>
+    }
+
+    public Claims extractClaims(String token){
+<span class="fc" id="L51">        return Jwts.parserBuilder()</span>
+<span class="fc" id="L52">                .setSigningKey(getSecretKey())</span>
+<span class="fc" id="L53">                .build()</span>
+<span class="fc" id="L54">                .parseClaimsJws(token)</span>
+<span class="fc" id="L55">                .getBody();</span>
+    }
+
+    public boolean validToken(String token){
+        try {
+<span class="fc" id="L60">            Jwts.parserBuilder()</span>
+<span class="fc" id="L61">                    .setSigningKey(getSecretKey())</span>
+<span class="fc" id="L62">                    .build()</span>
+<span class="fc" id="L63">                    .parseClaimsJws(token)</span>
+<span class="fc" id="L64">                    .getBody();</span>
+<span class="fc" id="L65">            return true;</span>
+<span class="fc" id="L66">        } catch (Exception e) {</span>
+<span class="fc" id="L67">            return false;</span>
+        }
+    }
+
+    private SecretKey getSecretKey() {
+<span class="fc" id="L72">        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

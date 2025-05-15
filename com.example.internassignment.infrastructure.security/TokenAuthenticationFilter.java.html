@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TokenAuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">intern-assignment</a> &gt; <a href="index.source.html" class="el_package">com.example.internassignment.infrastructure.security</a> &gt; <span class="el_source">TokenAuthenticationFilter.java</span></div><h1>TokenAuthenticationFilter.java</h1><pre class="source lang-java linenums">package com.example.internassignment.infrastructure.security;
+
+import com.example.internassignment.infrastructure.jwt.JwtTokenProvider;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+
+@RequiredArgsConstructor
+public class TokenAuthenticationFilter extends OncePerRequestFilter {
+    private final JwtTokenProvider provider;
+    private final UserDetailsServiceImpl userDetailsService;
+    private final static String HEADER_AUTHORIZATION = &quot;Authorization&quot;;
+    private final static String TOKEN_PREFIX = &quot;Bearer &quot;;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+<span class="fc" id="L27">        String jwt = request.getHeader(HEADER_AUTHORIZATION);</span>
+
+<span class="fc" id="L29">        String token = getAccessToken(jwt);</span>
+
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        if (provider.validToken(token)){</span>
+<span class="fc" id="L32">            String username = provider.extractClaims(token).getSubject();</span>
+<span class="fc" id="L33">            Authentication authentication = createAuthentication(username);</span>
+<span class="fc" id="L34">            SecurityContextHolder.getContext().setAuthentication(authentication);</span>
+        }
+
+<span class="fc" id="L37">        filterChain.doFilter(request, response);</span>
+<span class="fc" id="L38">    }</span>
+
+    private String getAccessToken (String authorizationHeader){
+<span class="pc bpc" id="L41" title="1 of 4 branches missed.">        if (authorizationHeader != null &amp;&amp; authorizationHeader.startsWith(TOKEN_PREFIX)){</span>
+<span class="fc" id="L42">            return authorizationHeader.substring(TOKEN_PREFIX.length());</span>
+        }
+<span class="fc" id="L44">        return null;</span>
+    }
+
+    private Authentication createAuthentication(String username){
+<span class="fc" id="L48">        UserDetails userDetails = userDetailsService.loadUserByUsername(username);</span>
+<span class="fc" id="L49">        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
