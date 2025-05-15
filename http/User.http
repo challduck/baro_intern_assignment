@@ -2,6 +2,9 @@
 @nickname = testNickname
 @password = testPassword1234!
 @username = testUsername
+@adminNickname = testAdminName
+@adminPassword = testPassword1234!
+@adminUsername = testAdminName
 @jwt = jwt
 @userId = 1
 
@@ -20,14 +23,31 @@ POST {{host}}/login
 Content-Type: Application/json
 
 {
-  "nickname": "{{nickname}}",
   "password": "{{password}}",
   "username": "{{username}}"
 }
 
-
-### 권한 변경 API는 ADMIN 회원 가입 이후 사용할 예정입니다.
-### 사용자 권한 변경 API
-PATCH {{host}}/admin/users/{{userId}}/roles
+### 관리자 회원가입 API
+POST {{host}}/admin/signup
 Content-Type: Application/json
-Authorization:
+
+{
+  "nickname": "{{adminNickname}}",
+  "password": "{{adminPassword}}",
+  "username": "{{adminUsername}}"
+}
+
+### 관리자 로그인 API
+POST {{host}}/login
+Content-Type: Application/json
+
+{
+  "password": "{{adminPassword}}",
+  "username": "{{adminUsername}}"
+}
+
+
+#### 사용자 권한 변경 API
+#PATCH {{host}}/admin/users/{{userId}}/roles
+#Content-Type: Application/json
+#Authorization: Bearer
