@@ -16,10 +16,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @RequiredArgsConstructor
-// @EnableMethodSecurity
 @EnableWebSecurity
 public class SecurityConfig {
     private final JwtTokenProvider provider;
@@ -27,13 +27,13 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler accessDeniedHandler;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
         http.sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.httpBasic(AbstractHttpConfigurer::disable);
         http.formLogin(AbstractHttpConfigurer::disable);
         http.csrf(AbstractHttpConfigurer::disable)
                 .headers((headersConfigurer)->headersConfigurer.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
-
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource));
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/login","/signup", "/admin/signup", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
