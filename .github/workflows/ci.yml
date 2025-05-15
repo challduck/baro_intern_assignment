@@ -1,13 +1,14 @@
-name: SpringBoot Project CI
+name: SpringBoot Project CI + Coverage Upload
+
 on:
   pull_request:
     branches:
       - dev
 
 jobs:
-  test:
-    name: Run All Tests on Dev Branch!
+  test-and-upload:
     runs-on: ubuntu-latest
+    name: Run Tests & Upload Coverage Report
 
     steps:
       - name: Checkout Source Code
@@ -19,8 +20,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Grant execute permission for gradlew
+      - name: Grant Permission to Gradlew
         run: chmod +x ./gradlew
 
-      - name: Run Tests
-        run: ./gradlew clean test
+      - name: Run Tests & Generate JaCoCo Coverage
+        run: ./gradlew clean test jacocoTestReport
+
+      - name: Upload Coverage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: build/jacocoHtml
