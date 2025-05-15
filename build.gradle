@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'jacoco'
     id 'org.springframework.boot' version '3.4.5'
     id 'io.spring.dependency-management' version '1.1.7'
 }
@@ -10,6 +11,20 @@ version = '0.0.1-SNAPSHOT'
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+jacoco {
+    toolVersion = '0.8.11'
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
     }
 }
 
@@ -54,4 +69,21 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+tasks.jacocoTestReport {
+    afterEvaluate {
+        classDirectories.setFrom(
+                files(classDirectories.files.collect { file ->
+                    fileTree(file) {
+                        exclude(
+                                '**/config/**',
+                                '**/dto/**',
+                                '**/exception/**'
+                        )
+                    }
+                })
+        )
+    }
 }
