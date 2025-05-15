@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: Deploy Spring Boot to EC2
 
 on:
   push:
@@ -35,13 +35,22 @@ jobs:
           source: build/libs/*.jar
           target: /home/${{ secrets.EC2_USER }}/app
 
-      - name: Remote SSH - Run App on EC2
+      - name: SSH Run SpringBoot on 8081
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            pkill -f 'java -jar' || true
-            nohup java -jar /home/${{ secrets.EC2_USER }}/app/*.jar > /home/${{ secrets.EC2_USER }}/app/app.log 2>&1 &
-            echo "Deployed at $(date)"
+            echo "[STEP 1] Kill existing Spring Boot process on port 8081..."
+            pkill -f "java -jar .*8081" || echo "No process running on 8081"
+
+            echo "[STEP 2] Verify Java is installed"
+            command -v java || { echo "Java is not installed"; exit 127; }
+
+            echo "[STEP 3] Start application on port 8081..."
+            nohup java -jar /home/${{ secrets.EC2_USER }}/app/*.jar --server.port=8081 > /home/${{ secrets.EC2_USER }}/app/app.log 2>&1 &
+
+            sleep 5
+            echo "[STEP 4] Tail recent logs:"
+            tail -n 30 /home/${{ secrets.EC2_USER }}/app/app.log
