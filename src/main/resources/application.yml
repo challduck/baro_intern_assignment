@@ -21,4 +21,5 @@ jwt:
   secret: ${JWT_SECRET:testjwtsecret1234567891234567891}
 
 server:
+  host: 3.35.136.127
   port: 8080
