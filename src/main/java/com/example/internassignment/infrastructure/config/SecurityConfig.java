@@ -1,6 +1,7 @@
 package com.example.internassignment.infrastructure.config;
 
 import com.example.internassignment.infrastructure.jwt.JwtTokenProvider;
+import com.example.internassignment.infrastructure.security.CustomAccessDeniedHandler;
 import com.example.internassignment.infrastructure.security.TokenAuthenticationFilter;
 import com.example.internassignment.infrastructure.security.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +19,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @RequiredArgsConstructor
+// @EnableMethodSecurity
 @EnableWebSecurity
 public class SecurityConfig {
     private final JwtTokenProvider provider;
     private final UserDetailsServiceImpl userDetailsService;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,11 +35,12 @@ public class SecurityConfig {
                 .headers((headersConfigurer)->headersConfigurer.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 
         http.authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login","/signup", "/admin/signup").permitAll()
+                        .requestMatchers("/login","/signup", "/admin/signup", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
         );
-
+        http.exceptionHandling((exception)-> exception
+                .accessDeniedHandler(accessDeniedHandler));
         http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

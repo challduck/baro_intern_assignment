@@ -6,6 +6,7 @@ import com.example.internassignment.common.exception.InvalidCredentialsException
 import com.example.internassignment.domain.entity.Role;
 import com.example.internassignment.infrastructure.config.SecurityConfig;
 import com.example.internassignment.infrastructure.jwt.JwtTokenProvider;
+import com.example.internassignment.infrastructure.security.CustomAccessDeniedHandler;
 import com.example.internassignment.infrastructure.security.UserDetailsServiceImpl;
 import com.example.internassignment.presentation.dto.CreateAdminRequestDto;
 import com.example.internassignment.presentation.dto.CreateUserRequestDto;
@@ -31,7 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Import({SecurityConfig.class})
+@Import({SecurityConfig.class, CustomAccessDeniedHandler.class})
 @WebMvcTest(UserController.class)
 class UserControllerTest {
     @Autowired
@@ -228,21 +229,12 @@ class UserControllerTest {
     void test8 () throws Exception{
         // given
         final Long userId = 1L;
-        final String username = "testUser";
-        final String nickname = "testNickname";
-        final List<Role> roles = List.of(Role.ADMIN);
-
-        ProcessUpdateUserRoleResult result = ProcessUpdateUserRoleResult.builder()
-                .username(username)
-                .nickname(nickname)
-                .roles(roles)
-                .build();
-
-        given(userService.updateUserRole(userId)).willReturn(result);
 
         // when & then
         mockMvc.perform(patch("/admin/users/{userId}/roles", userId).with(csrf()))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("ACCESS_DINED"))
+                .andExpect(jsonPath("$.message").value("관리자 권한이 필요한 요청입니다. 접근 권한이 없습니다."));
     }
 
     @Test
